@@ -4,7 +4,10 @@ import viterbi
 from concurrent.futures import ThreadPoolExecutor
     
 def compare(test_sentence:list, verbose=False)->None:
-    """Description"""
+    """Given a tagged test sentence, compare the tags predicted by the HMM to 
+    the actual tags. Returns a list of tuples. Each tuple contains a word that
+    was wrongly tagged, and another tuple containing the predicted and actual
+    tags. If no errors are made, returns an empty list."""
     
     words = [word for word, _ in test_sentence]
     tags = [tag for _, tag in test_sentence]
@@ -47,16 +50,25 @@ errors = []
 # How many total tokens were tested
 total_tokens = 0
 
+# Using ThredPoolExecutor so that we can take advantage of multi-threading.
+# The end-result of this is basically equivalent to running a for loop on 
+# test_set. The Viterbi algorithm is quite computationally expensive; 
+# without multi-threading the code below would take even longer to run! 
 with ThreadPoolExecutor(max_workers=5) as p:
     results = p.map(compare, test_set)
 
+# Calculate total number of words in the test set
 for sent in test_set:
     total_tokens += len(sent)
 
+# Calculate how many errors the tagger makes, and how many of these were made
+# on unknown words
 total_errors = len(errors)
 most_common_errors = nltk.FreqDist(errors).most_common()
 unkwords_errors = 0
 
+# Write results to a pickle file, so we can reference them without running
+# the entire thing again.
 with open('most_common_errors.pkl' , 'wb') as file:
     pickle.dump(most_common_errors, file)
 

@@ -1,3 +1,6 @@
+"""This script makes pickle files out of the trained HMM, the test set,
+and the words present in the test set but not in the train set (unknown words)"""
+
 import pickle
 import nltk.corpus
 from hmm import hmm

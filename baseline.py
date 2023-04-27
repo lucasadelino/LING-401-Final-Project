@@ -1,7 +1,11 @@
+"""This script implements the most-frequent-tag baseline, which, given an 
+ambiguous word, selects the tag that occcurs the most often."""
+
 import nltk
 import nltk.corpus
 import pickle
 
+# Convert words to lowercase and make ConditionalFreqDist
 lower = [(word.lower(), tag) for (word, tag) in nltk.corpus.mac_morpho.tagged_words()]
 data = nltk.ConditionalFreqDist(lower)
 
@@ -20,6 +24,7 @@ for sent in test_set:
     tokens += len(sent)
     for word, tag in sent:
         word = word.lower()
+        # Get tag which occurs the most often
         pred = max(data[word], key=data[word].get)
         if pred != tag:
             errors += 1
