@@ -1,6 +1,6 @@
 import pickle
 import nltk
-import viterbi
+from viterbi import viterbi
 from concurrent.futures import ThreadPoolExecutor
     
 def compare(test_sentence:list, verbose=False)->None:
@@ -45,8 +45,6 @@ with open('test_set.pkl', 'rb') as file:
 with open('unknown_words.pkl' , 'rb') as file:
     unknown_words = pickle.load(file)
 
-# All the errors
-errors = []
 # How many total tokens were tested
 total_tokens = 0
 
@@ -54,18 +52,25 @@ total_tokens = 0
 # The end-result of this is basically equivalent to running a for loop on 
 # test_set. The Viterbi algorithm is quite computationally expensive; 
 # without multi-threading the code below would take even longer to run! 
-with ThreadPoolExecutor(max_workers=5) as p:
-    results = p.map(compare, test_set)
+with ThreadPoolExecutor(max_workers=30) as p:
+    errors = p.map(compare, test_set)
 
 # Calculate total number of words in the test set
 for sent in test_set:
     total_tokens += len(sent)
+
+# Make errors into a list (it would normally be a generator object)
+errors = [error for sublist in errors for error in sublist if error]
 
 # Calculate how many errors the tagger makes, and how many of these were made
 # on unknown words
 total_errors = len(errors)
 most_common_errors = nltk.FreqDist(errors).most_common()
 unkwords_errors = 0
+
+for error, value in most_common_errors:
+    if error[0] in unknown_words:
+        unkwords_errors += value
 
 # Write results to a pickle file, so we can reference them without running
 # the entire thing again.
