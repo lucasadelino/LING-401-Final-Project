@@ -68,6 +68,7 @@ total_errors = len(errors)
 most_common_errors = nltk.FreqDist(errors).most_common()
 unkwords_errors = 0
 
+# Check how many errors were made on empty words
 for error, value in most_common_errors:
     if error[0] in unknown_words:
         unkwords_errors += value
